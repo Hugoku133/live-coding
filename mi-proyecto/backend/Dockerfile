@@ -1,18 +1,18 @@
-# Usa una imagen ligera de Node
-FROM node:18-alpine
+# Usamos una imagen oficial de Python ligera
+FROM python:3.11-slim
 
-# Crea el directorio de trabajo
+# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia los archivos de dependencias y las instala
-COPY package*.json ./
-RUN npm install
+# Copiamos primero requirements para aprovechar la caché de Docker
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el resto del código
+# Copiamos el resto del código
 COPY . .
 
-# Expone el puerto que usa tu app
-EXPOSE 3000
+# Puerto que expone Flask
+EXPOSE 5000
 
 # Comando para arrancar la app
-CMD ["node", "app.js"]
+CMD ["python", "app.py"]

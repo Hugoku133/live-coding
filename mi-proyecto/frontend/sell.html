@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini-Tienda — Vender</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark px-4 mb-4">
+  <a class="navbar-brand fw-bold" href="index.html">🛒 Mini-Tienda</a>
+  <div id="nav-links" class="d-flex gap-2"></div>
+</nav>
+
+<div class="container" style="max-width:600px">
+  <h2 class="mb-4">Publicar producto</h2>
+
+  <div id="error-msg" class="alert alert-danger d-none"></div>
+  <div id="ok-msg"    class="alert alert-success d-none"></div>
+
+  <div class="mb-3">
+    <label class="form-label">Nombre del producto</label>
+    <input id="nombre" type="text" class="form-control" maxlength="100">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Descripción</label>
+    <textarea id="descripcion" class="form-control" rows="3" maxlength="500"></textarea>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Precio (€)</label>
+    <input id="precio" type="number" class="form-control" min="0.01" step="0.01">
+  </div>
+
+  <button class="btn btn-primary w-100" onclick="publicar()">Publicar producto</button>
+
+  <hr class="my-4">
+  <h4>Mis productos</h4>
+  <div id="mis-productos"><p class="text-muted">Cargando...</p></div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  async function init() {
+    const user = await getMe();
+    if (!user) { location.href = "login.html"; return; }
+    renderNav();
+    cargarMisProductos();
+  }
+
+  async function publicar() {
+    const body = {
+      nombre:      document.getElementById("nombre").value,
+      descripcion: document.getElementById("descripcion").value,
+      precio:      parseFloat(document.getElementById("precio").value)
+    };
+
+    const res  = await fetch(`${API}/productos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      mostrarMsg("ok-msg", "¡Producto publicado!");
+      document.getElementById("nombre").value      = "";
+      document.getElementById("descripcion").value = "";
+      document.getElementById("precio").value      = "";
+      cargarMisProductos();
+    } else {
+      mostrarMsg("error-msg", data.error);
+    }
+  }
+
+  async function cargarMisProductos() {
+    const res  = await fetch(`${API}/mis-productos`, { credentials: "include" });
+    const data = await res.json();
+    const div  = document.getElementById("mis-productos");
+
+    if (!data.length) { div.innerHTML = "<p class='text-muted'>Aún no has publicado nada.</p>"; return; }
+
+    div.innerHTML = `<table class="table table-sm">
+      <thead><tr><th>Nombre</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        ${data.map(p => `
+          <tr>
+            <td>${escapeHtml(p.nombre)}</td>
+            <td>${p.precio.toFixed(2)} €</td>
+            <td>${p.activo ? "🟢 Activo" : "🔴 Vendido"}</td>
+            <td>${p.activo ? `<button class="btn btn-danger btn-sm" onclick="eliminar(${p.id})">Eliminar</button>` : ""}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+  }
+
+  async function eliminar(id) {
+    if (!confirm("¿Seguro que quieres eliminar este producto?")) return;
+    const res = await fetch(`${API}/productos/${id}`, { method: "DELETE", credentials: "include" });
+    const data = await res.json();
+    mostrarMsg(res.ok ? "ok-msg" : "error-msg", data.mensaje || data.error);
+    cargarMisProductos();
+  }
+
+  function mostrarMsg(id, texto) {
+    ["ok-msg","error-msg"].forEach(i => document.getElementById(i).classList.add("d-none"));
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.classList.remove("d-none");
+  }
+
+  init();
+</script>
+</body>
+</html>

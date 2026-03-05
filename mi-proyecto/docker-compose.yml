@@ -1,18 +1,23 @@
+version: "3.9"
+
 services:
-  # Servicio del Backend (Node.js, Python, PHP...)
   api:
     build: ./backend
+    container_name: tienda_backend
     ports:
-      - "3000:3000"  # Mapea el puerto 3000 del contenedor al 3000 de tu PC
+      - "5000:5000"
     volumes:
-      - ./backend:/app # Sincroniza tu código para ver cambios en vivo
+      - ./backend:/app   # los cambios en tu código se reflejan sin reconstruir
     environment:
-      - NODE_ENV=production
+      - FLASK_ENV=development
+      - SECRET_KEY=cambia_esto_por_algo_secreto_largo
 
-  # Servicio del Frontend (Servidor web sencillo)
   web:
     image: nginx:alpine
+    container_name: tienda_frontend
     ports:
-      - "8080:80"    # Entrarás a tu app desde http://localhost:8080
+      - "8080:80"
     volumes:
-      - ./frontend:/usr/share/nginx/html # Sirve tus archivos HTML/JS
+      - ./frontend:/usr/share/nginx/html:ro  # sirve los HTML estáticos
+    depends_on:
+      - api

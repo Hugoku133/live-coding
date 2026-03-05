@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini-Tienda — Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="min-height:100vh">
+
+<div class="card shadow" style="width:380px">
+  <div class="card-body p-4">
+    <h3 class="card-title mb-4 text-center">Iniciar sesión</h3>
+
+    <div id="error-msg" class="alert alert-danger d-none"></div>
+
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input id="email" type="email" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Contraseña</label>
+      <input id="password" type="password" class="form-control">
+    </div>
+
+    <button class="btn btn-success w-100" onclick="iniciarSesion()">Entrar</button>
+    <p class="text-center mt-3 mb-0">¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  async function iniciarSesion() {
+    const body = {
+      email:    document.getElementById("email").value,
+      password: document.getElementById("password").value
+    };
+
+    const res  = await fetch(`${API}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      location.href = "index.html";
+    } else {
+      const el = document.getElementById("error-msg");
+      el.textContent = data.error;
+      el.classList.remove("d-none");
+    }
+  }
+</script>
+</body>
+</html>

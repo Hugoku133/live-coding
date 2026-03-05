@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini-Tienda — Registro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center" style="min-height:100vh">
+
+<div class="card shadow" style="width:400px">
+  <div class="card-body p-4">
+    <h3 class="card-title mb-4 text-center">Crear cuenta</h3>
+
+    <div id="error-msg" class="alert alert-danger d-none"></div>
+    <div id="ok-msg"    class="alert alert-success d-none"></div>
+
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input id="username" type="text" class="form-control" placeholder="min. 3 caracteres">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input id="email" type="email" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Contraseña</label>
+      <input id="password" type="password" class="form-control" placeholder="min. 6 caracteres">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Confirmar contraseña</label>
+      <input id="confirm" type="password" class="form-control">
+    </div>
+
+    <button class="btn btn-primary w-100" onclick="registrar()">Registrarse</button>
+    <p class="text-center mt-3 mb-0">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+  </div>
+</div>
+
+<script src="script.js"></script>
+<script>
+  async function registrar() {
+    const body = {
+      username:         document.getElementById("username").value,
+      email:            document.getElementById("email").value,
+      password:         document.getElementById("password").value,
+      confirm_password: document.getElementById("confirm").value
+    };
+
+    const res  = await fetch(`${API}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      mostrarMensaje("ok-msg", "¡Registro exitoso! Redirigiendo...");
+      setTimeout(() => location.href = "login.html", 1500);
+    } else {
+      mostrarMensaje("error-msg", data.error);
+    }
+  }
+
+  function mostrarMensaje(id, texto) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.classList.remove("d-none");
+  }
+</script>
+</body>
+</html>
